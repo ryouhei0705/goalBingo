@@ -1,0 +1,28 @@
+.container {
+    flex-direction: column;
+    max-width: 980px;
+    min-height: 100vh;
+    margin: auto;
+    padding-top: 1rem;
+    background: #f3f4f6;
+}
+
+.column {
+    margin: 1rem 1rem 0 0;
+    padding: 1rem;
+}
+
+.subtitle{
+    font-size: 2rem;
+    padding: 1rem 1rem 0 0;
+}
+
+.text{
+    font-size: 1.5rem;
+    padding: 1rem 1rem 0 0;
+}
+
+.word{
+    font-size: 1.5rem;
+    padding: 0 1rem 1rem 0;
+}

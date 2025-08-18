@@ -1,0 +1,84 @@
+.container{
+    flex-direction: column;
+    max-width: 980px;
+    min-height: 80vh;
+    margin: auto;
+    padding: 1rem;
+    background: #f3f4f6;
+}
+
+.title{
+    width: 100%;
+    margin: 2rem 0;
+    color:#6b7280;
+    font-weight: 700;
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    text-align: center;
+}
+
+.bingoTable{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cellNoMarke{
+    position: relative;
+    width: 20%;
+    height: 20%;
+    padding-top: 1rem;
+    padding-right: 1.5rem;
+    padding-bottom: 1rem;
+    padding-left: 1.5rem;
+    overflow-y: scroll;
+    border-width: 1px;
+    background: white;
+}
+
+.cellMarked{
+    position: relative;
+    width: 20%;
+    height: 20%;
+    padding-top: 1rem;
+    padding-right: 1.5rem;
+    padding-bottom: 1rem;
+    padding-left: 1.5rem;
+    overflow-y: scroll;
+    border-width: 1px;
+    background: #b3ffcc;
+}
+
+.weapon{
+    color:#6b7280;
+}
+
+.stage {
+    color: #6b7280;
+}
+
+.regenerate{
+    width: 20%;
+    margin:2rem 40%;
+    padding-top: 0.5rem;
+    padding-right: 1rem;
+    padding-bottom: 0.5rem;
+    padding-left: 1rem;
+    border-radius: 0.25rem;
+    background: #3b82f6;
+    color: white;
+    &:hover{
+        background: #2563eb;
+    }
+}
+
+.ruleTitle {
+    color:#6b7280;
+    font-size: 2rem;
+}
+
+.ruleText {
+    color:#6b7280;
+    font-size: 1.5rem;
+    padding: 1rem 1rem 0 0;
+}
+

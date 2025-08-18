@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+}
+
+a{
+  color: #2563eb;
+  &:hover{
+    text-decoration:underline;
+    text-decoration-color: #2563eb;
+  }
+}
+.headerContainer{
+  flex-direction: column;
+  max-width: 980px;
+  min-height: 5vh;
+  margin: auto;
+  background: #f3f4f6;
+}
+
+.headerIconParent{
+  display: flex;
+  justify-content: start;
+  flex-wrap: wrap;
+}
+
+.headerIconChild{
+  margin: 0.2rem;
+}
+
+html {
+  /* デフォルト（モバイルビュー）ではベースのfont-sizeは12px相当 */
+  font-size: 75%;
+}
+
+.footerCopyright {
+  max-width: 980px;
+  margin: auto;
+  padding: 1rem;
+  text-align: center;
+  background: #f3f4f6;
+  // background-color: red
+}
+
+@media screen and (min-width:768px) {
+  html {
+    /* タブレットビューではベースのfont-sizeは14px相当 */
+    font-size: 87.5%;
+  }
+}
+
+@media screen and (min-width:1200px) {
+  html {
+    /* デスクトップビューではベースのfont-sizeは16px相当 */
+    font-size: 100%;
+  }
+}
