@@ -4,11 +4,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import styles from '@/styles/about.module.scss'
 
+// サイトについてのページ
 const About = () => {
     return (
         <div className={styles.container}>
             <Head>
-                <title>エンジョイスプラ</title>
+                <title>目標ビンゴ</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             </Head>
 
@@ -17,7 +18,7 @@ const About = () => {
                     このサイトについて
                 </div>
                 <div className={styles.text}>
-                    エンジョイスプラでは、スプラトゥーンをより楽しむためのツールを公開しています。
+                    目標ビンゴでは、目標を持ち，達成することを楽しむためのツールを公開しています。
                 </div>
             </div>
 
@@ -33,7 +34,7 @@ const About = () => {
                     </li>
                     <li>
                         <Link href='/'>
-                            ・スプラビンゴ
+                            ・目標ビンゴ
                         </Link>
                     </li>
                 </ul>
@@ -63,14 +64,14 @@ const About = () => {
                 </div>
             </div>
 
-            <div className={styles.column}>
+            {/* <div className={styles.column}>
                 <div className={styles.subtitle}>
                     アマゾンリンクについて
                 </div>
                 <div className={styles.text}>
                     エンジョイスプラの管理者であるryouhei0705は、Amazonのアソシエイトとして適格販売により収入を得ています。
                 </div>
-            </div>
+            </div> */}
        
         </div>
     );

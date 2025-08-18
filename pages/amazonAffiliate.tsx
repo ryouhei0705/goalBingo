@@ -2,6 +2,7 @@ import React from 'react';
 import styles from '@/styles/amazonAffiliate.module.scss'
 import Head from 'next/head';
 
+// アマゾンアフィリエイトようのページ
 const AmazonAffiliate = () => {
     return (
         <div className={styles.container}>

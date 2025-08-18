@@ -4,6 +4,8 @@ import { initializeWeapons } from './arrayUtils';
 import Image from 'next/image';
 import { Rule } from 'postcss';
 import Head from 'next/head';
+
+// 各セルのデータのインターフェース
 interface CellData {
     value1: string;
     value2: string;
@@ -33,15 +35,16 @@ const rules: ValueDate[] = [
     { name: 'ナワバリ', imageUrl: '/images/nawabari.webp' },
 ];
 
+// ビンゴのコンポーネント
 const Bingo = () => {
     const [board, setBoard] = useState<CellData[][]>([]);
 
     const initializeBoard = useCallback(() => {
         const newBoard: CellData[][] = [];
 
-        for (let row = 0; row < 5; row++) {
+        for (let row = 0; row < 3; row++) {
             const newRow: CellData[] = [];
-            for (let col = 0; col < 5; col++) {
+            for (let col = 0; col < 3; col++) {
                 // const weapon:ValueDate = getRandomElement(weapons);
                 const rule: ValueDate = getRandomElement(rules);
 
@@ -96,7 +99,7 @@ const Bingo = () => {
             <Head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             </Head>
-            <h1 className={styles.title}>スプラビンゴ</h1>
+            <h1 className={styles.title}>目標ビンゴ</h1>
             <table className={styles.bingoTable}>
                 <tbody>
                     {board.map((row, rowIndex) => (
@@ -130,6 +133,7 @@ const Bingo = () => {
                     ))}
                 </tbody>
             </table>
+            {/* 再生性ボタン */}
             <button
                 className={styles.regenerate}
                 onClick={regenerateBoard}

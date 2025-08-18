@@ -41,7 +41,7 @@ export default function Document() {
       </body>
       
       <div className='footerCopyright'>
-        <p>&copy; copyright enjoyspla 2023</p>
+        <p>&copy; copyright GoalBingo 2025</p>
       </div>
     </Html>
   )
