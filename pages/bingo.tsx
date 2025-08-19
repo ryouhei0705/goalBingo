@@ -36,7 +36,7 @@ const rules: ValueDate[] = [
 ];
 
 // ビンゴのコンポーネント
-const Bingo = () => {
+const Bingo = ({ goals }: { goals: string[] }) => {
     const [board, setBoard] = useState<CellData[][]>([]);
 
     const initializeBoard = useCallback(() => {
@@ -51,7 +51,7 @@ const Bingo = () => {
                 const cellData: CellData = {
                     // value1: weapon.name,
                     value1: getRandomElementString(initializeWeapons()),
-                    value2: rule.name,
+                    value2: goals[0],
                     // value1Image: weapon.imageUrl,
                     value1Image: 'weaponImageUrl',
                     value2Image: rule.imageUrl,

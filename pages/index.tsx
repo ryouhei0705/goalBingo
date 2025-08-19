@@ -3,6 +3,7 @@ import Bingo from './bingo';
 import AmazonAffiliate from './amazonAffiliate';
 import Head from 'next/head';
 import Link from 'next/link';
+import CreateBingo from './createBingo';
 
 // メインのページ
 const Home = () => {
@@ -14,7 +15,7 @@ const Home = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
-      <Bingo />{/* ビンゴ */}
+      <CreateBingo />{/* ビンゴの作成 */}
       {/* <AmazonAffiliate /> */}{/* アマゾンアフィリエイト */}
     </div>
   );
