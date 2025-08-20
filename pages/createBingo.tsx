@@ -46,27 +46,39 @@ const CreateBingo = () => {
   }
 
   return (
-    <main style={{ padding: 16 }}>
-      <h1>目標を8つ登録</h1>
+    <div className={styles.container}>
+      <h1 className={styles.title}>
+        目標ビンゴを作成しよう!!
+        </h1>
       {/* 登録フォーム */}
       <form onSubmit={onSubmit}>
         {/* goals配列分入力フォームを設置 */}
         {goals.map((goal, i) => (
-          <div key={i}>
-            <label>
-              Goal {i + 1}:{" "}
-              <input
-                type="text"
-                value={goal}
-                onChange={(e) => updateGoal(i, e.target.value)}
-                placeholder={`目標 ${i + 1}`}
-              />
-            </label>
-          </div>
+            <input
+            className={styles.weapon}
+            type="text"
+            value={goal}
+            onChange={(e) => updateGoal(i, e.target.value)}
+            placeholder={`目標 ${i + 1}`}
+            />
         ))}
-        <button type="submit">登録</button>
+        <button 
+            className={styles.regenerate}
+            type="submit"
+        >
+            作成
+        </button>
       </form>
-    </main>
+      
+        <div className={styles.ruleTitle}>
+            注意
+        </div>
+        <div className={styles.ruleText}>
+            ・目標は8つ立ててください。
+            <br></br>
+            ・個人情報等，他人に知られてはいけないことは入力しないでください。
+        </div>
+    </div>
   );
 };
 

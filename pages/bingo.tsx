@@ -1,42 +1,16 @@
 import React, { useState, useEffect,useCallback,useMemo } from 'react';
 import styles from '@/styles/bingo.module.scss'
-import { initializeWeapons } from './arrayUtils';
-import Image from 'next/image';
-import { Rule } from 'postcss';
 import Head from 'next/head';
 
 // 各セルのデータのインターフェース
 interface CellData {
-    value1: string;
-    value2: string;
-    value1Image: string;
-    value2Image: string;
+    goal: string;
     marked: boolean;
 }
 
-interface ValueDate{
-    name: string;
-    imageUrl: string;
-}
-
-// const weapons:ValueDate[] = [
-//     { name: 'ボールドマーカー', imageUrl: '/images/borudomaka.png' },
-//     { name: 'ボールドマーカーネオ', imageUrl: '/images/borudomakaneo.png' },
-//     { name: 'わかばシューター', imageUrl: '/images/wakabasyuta.png' },
-//     { name: 'もみじシューター', imageUrl: '/images/momizisyuta.png' },
-//     { name: 'シャープマーカー', imageUrl: '/images/syapumaka.png' },
-// ];
-
-const rules: ValueDate[] = [
-    { name: 'ガチエリア', imageUrl: '/images/gatieria.webp' },
-    { name: 'ガチヤグラ', imageUrl: '/images/gatiyagura.webp' },
-    { name: 'ガチホコ', imageUrl: '/images/gatihoko.webp' },
-    { name: 'ガチアサリ', imageUrl: '/images/gatiasari.webp' },
-    { name: 'ナワバリ', imageUrl: '/images/nawabari.webp' },
-];
-
 // ビンゴのコンポーネント
 const Bingo = ({ goals }: { goals: string[] }) => {
+    // ビンゴのボードを作成
     const [board, setBoard] = useState<CellData[][]>([]);
 
     const initializeBoard = useCallback(() => {
@@ -45,26 +19,39 @@ const Bingo = ({ goals }: { goals: string[] }) => {
         for (let row = 0; row < 3; row++) {
             const newRow: CellData[] = [];
             for (let col = 0; col < 3; col++) {
-                // const weapon:ValueDate = getRandomElement(weapons);
-                const rule: ValueDate = getRandomElement(rules);
+                // 何番目の目標か
+                const goal_index: number = row*3 + col;
 
-                const cellData: CellData = {
-                    // value1: weapon.name,
-                    value1: getRandomElementString(initializeWeapons()),
-                    value2: goals[0],
-                    // value1Image: weapon.imageUrl,
-                    value1Image: 'weaponImageUrl',
-                    value2Image: rule.imageUrl,
+                // どの目標を割り当てるか
+                if(goal_index === 4)
+                {
+                    // 4番，真ん中は「目標を立てる」固定
+                    const cellData: CellData = {
+                    goal: "目標を立てる",
+                    marked: true,                   
+                    };
+                    newRow.push(cellData);
+                }else if(goal_index < 4){
+                    // 真ん中の前なら，goal_indexはそのまま
+                    const cellData: CellData = {
+                    goal: goals[goal_index],
                     marked: false,                   
-                };
-                newRow.push(cellData);
+                    };
+                    newRow.push(cellData);
+                }else{
+                    // 真ん中の後なら，goal_index - 1
+                    const cellData: CellData = {
+                    goal: goals[goal_index - 1],
+                    marked: false,                   
+                    };
+                    newRow.push(cellData);
+                }
             }
             newBoard.push(newRow);
         }
 
         setBoard(newBoard);
-    // },[weapons,rules]);
-    },[rules]);
+    },[goals]);
 
     useEffect(() => {
         initializeBoard();
@@ -74,25 +61,18 @@ const Bingo = ({ goals }: { goals: string[] }) => {
 
     const handleClick = (row: number, col: number) => {
         const updatedBoard = [...board];
-        updatedBoard[row][col].marked = true;
+
+        // trueならfalse，falseならtrue
+        if(updatedBoard[row][col].marked === true)
+        {
+            updatedBoard[row][col].marked = false;
+        }else
+        {
+            updatedBoard[row][col].marked = true;
+        }
+        
         setBoard(updatedBoard);
     };
-
-    const regenerateBoard = () => {
-        initializeBoard();
-    };
-
-    const getRandomElement = (array: ValueDate[]) => {
-        const randomIndex = Math.floor(Math.random() * array.length);
-        return array[randomIndex];
-    };
-
-    const getRandomElementString = (array: string[]) => {
-        const randomIndex = Math.floor(Math.random() * array.length);
-        return array[randomIndex];
-    };
-
-    
 
     return (
         <div className={styles.container}>
@@ -113,19 +93,8 @@ const Bingo = ({ goals }: { goals: string[] }) => {
                                     // style={cell.marked ? 'background: green': 'background: white'}   
                                 >
                                     <div className={styles.weapon}>
-                                        {cell.value1}
+                                        {cell.goal}
                                     </div>
-                                    <div className={styles.stage}>
-                                        {cell.value2}
-                                    </div>
-                                    {/* <div className="flex items-center justify-center text-gray-500 font-bold h-12">
-                                        {cell.value1}
-                                    </div>
-                                    <div className="text-xs text-gray-500 mt-1 h-4">
-                                        {cell.value2}
-                                    </div> */}
-                                    {/* <img src={cell.value1Image} alt="写真" className="w-full h-full" />
-                                    <img src={cell.value2Image} alt="写真" className="w-full h-full" /> */}
                                 </td>
 
                             ))}
@@ -133,22 +102,7 @@ const Bingo = ({ goals }: { goals: string[] }) => {
                     ))}
                 </tbody>
             </table>
-            {/* 再生性ボタン */}
-            <button
-                className={styles.regenerate}
-                onClick={regenerateBoard}
-            >
-                再生成
-            </button>
-            
-            <div className={styles.ruleTitle}>
-                遊び方
-            </div>
-            <div className={styles.ruleText}>
-                ・各マスには、武器とルールがセットになっています。
-                <br></br>
-                ・マスの武器とルールでゲームに勝利したとき、そのマスを開けてください。
-            </div>
+
         </div>
     );
 
