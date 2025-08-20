@@ -4,10 +4,16 @@ import styles from '@/styles/createBingo.module.scss'
 import Image from 'next/image';
 import Head from 'next/head';
 
+// 目標の入力フォームの初期値
+const INITIAL_GOALS = Array(8).fill("");
+
 // ビンゴ作成のコンポーネント
 const CreateBingo = () => {
+  // 作成ボタン入力後のローディングを管理
+  const [loading, setLoading] = useState(false);
+
   // 8個の入力欄を用意（初期値は空文字）
-  const [goals, setGoals] = useState<string[]>(Array(8).fill(""));
+  const [goals, setGoals] = useState<string[]>(INITIAL_GOALS);
   const router = useRouter();
 
 //   配列の更新用
@@ -18,31 +24,42 @@ const CreateBingo = () => {
   }
 
   async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+    // ローディング開始
+    setLoading(true); 
 
-    // 全て入力されているか確認
-    const filteredGoals = goals.map((g) => g.trim()).filter((g) => g.length > 0);
-    if (filteredGoals.length !== 8) {
-      alert("目標は必ず8個入力してください");
-      return;
+    try{
+        e.preventDefault();
+
+        // 全て入力されているか確認
+        const filteredGoals = goals.map((g) => g.trim()).filter((g) => g.length > 0);
+        if (filteredGoals.length !== 8) {
+            alert("目標は必ず8個入力してください");
+        return;
+        }
+
+        // 内部APIを呼び出して，目標を登録
+        const res = await fetch("/api/createGoals", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ goals: filteredGoals }),
+        });
+
+        // 内部APIを問題なく動作できたか確認
+        const json = await res.json();
+        if (!res.ok) {
+            alert(json.error ?? "登録に失敗しました");
+        return;
+        }
+
+        // 目標の入力値を初期化
+        setGoals(INITIAL_GOALS);
+
+        // サーバーが生成した bingoId を受け取り、詳細ページに遷移
+        router.push(`/33bingos/${encodeURIComponent(json.bingoId)}`);
+    }finally{
+        // 画面遷移後にローディング終了
+        setLoading(false); 
     }
-
-    // 内部APIを呼び出して，目標を登録
-    const res = await fetch("/api/createGoals", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ goals: filteredGoals }),
-    });
-
-    // 内部APIを問題なく動作できたか確認
-    const json = await res.json();
-    if (!res.ok) {
-      alert(json.error ?? "登録に失敗しました");
-      return;
-    }
-
-    // サーバーが生成した bingoId を受け取り、詳細ページに遷移
-    router.push(`/33bingos/${encodeURIComponent(json.bingoId)}`);
   }
 
   return (
@@ -69,10 +86,19 @@ const CreateBingo = () => {
         <button 
             className={styles.button}
             type="submit"
+            disabled={loading}
         >
             作成
         </button>
       </form>
+
+        {/* ローディング中の表示 */}
+        {loading && (
+            <div className={styles.overlay}>
+                <p>作成中です...</p>
+            </div>
+        )}
+       
 
       <div className={styles.container}>
         <div className={styles.ruleText}>
