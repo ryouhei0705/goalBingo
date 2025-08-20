@@ -4,7 +4,7 @@ import styles from '@/styles/footer.module.scss'
 const Footer = () => {
     return (
         <div className={styles.copyright}>
-            <p>&copy; copyright enjoyspla 2023</p>
+            <p>&copy; copyright GoalBingo 2025</p>
         </div>
     )
 }

@@ -1,6 +1,5 @@
 import React from 'react';
 import Bingo from './bingo';
-import AmazonAffiliate from './amazonAffiliate';
 import Head from 'next/head';
 import Link from 'next/link';
 import CreateBingo from './createBingo';
@@ -16,7 +15,6 @@ const Home = () => {
       </Head>
 
       <CreateBingo />{/* ビンゴの作成 */}
-      {/* <AmazonAffiliate /> */}{/* アマゾンアフィリエイト */}
     </div>
   );
 };

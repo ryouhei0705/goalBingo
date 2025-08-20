@@ -1,6 +1,7 @@
 import React, { useState, useEffect,useCallback,useMemo } from 'react';
 import styles from '@/styles/bingo.module.scss'
 import Head from 'next/head';
+import { Container } from 'postcss';
 
 // 各セルのデータのインターフェース
 interface CellData {
@@ -58,7 +59,7 @@ const Bingo = ({ goals }: { goals: string[] }) => {
     }, [initializeBoard]);
 
 
-
+    // ビンゴの各セルをクリックした時の処理
     const handleClick = (row: number, col: number) => {
         const updatedBoard = [...board];
 
@@ -80,29 +81,27 @@ const Bingo = ({ goals }: { goals: string[] }) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             </Head>
             <h1 className={styles.title}>目標ビンゴ</h1>
-            <table className={styles.bingoTable}>
-                <tbody>
+            <div className={styles.bingoTable}>
                     {board.map((row, rowIndex) => (
-                        <tr key={rowIndex}>
+                        <div 
+                        className={styles.bingoRow}
+                        key={rowIndex}>
                             {row.map((cell, colIndex) => (
-                                <td
+                                <div
                                     key={colIndex}
                                     onClick={() => handleClick(rowIndex, colIndex)}
-                                    // className={styles.bingoCell }   
-                                    className={`${cell.marked ? styles.cellMarked : styles.cellNoMarke}`}
-                                    // style={cell.marked ? 'background: green': 'background: white'}   
+                                    className={`${styles.cell} ${cell.marked ? styles.cellMarked : styles.cellNoMarke}`}
                                 >
-                                    <div className={styles.weapon}>
+                                    <p>
                                         {cell.goal}
-                                    </div>
-                                </td>
+                                    </p>
+                                    
+                                </div>
 
                             ))}
-                        </tr>
+                        </div>
                     ))}
-                </tbody>
-            </table>
-
+            </div>
         </div>
     );
 

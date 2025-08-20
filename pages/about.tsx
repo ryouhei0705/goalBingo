@@ -18,7 +18,7 @@ const About = () => {
                     このサイトについて
                 </div>
                 <div className={styles.text}>
-                    目標ビンゴでは、目標を持ち，達成することを楽しむためのツールを公開しています。
+                    目標ビンゴでは、目標を持ち，達成することを楽しむためのビンゴ作成ツールを公開しています。
                 </div>
             </div>
 
@@ -34,7 +34,7 @@ const About = () => {
                     </li>
                     <li>
                         <Link href='/'>
-                            ・目標ビンゴ
+                            ・目標ビンゴを作成する
                         </Link>
                     </li>
                 </ul>
@@ -47,12 +47,6 @@ const About = () => {
                 <div className={styles.word}>
                     りょうへい0705
                 </div>
-                {/* <Image 
-                    src="/images/icon_ryouhei0705.jpg"
-                    width={60}
-                    height={60}
-                    alt="Profile picture">
-                </Image> */}
             </div>
 
             <div className={styles.column}>
@@ -63,15 +57,6 @@ const About = () => {
                     <a href="https://twitter.com/ryouhei_0705">@りょうへい0705</a>
                 </div>
             </div>
-
-            {/* <div className={styles.column}>
-                <div className={styles.subtitle}>
-                    アマゾンリンクについて
-                </div>
-                <div className={styles.text}>
-                    エンジョイスプラの管理者であるryouhei0705は、Amazonのアソシエイトとして適格販売により収入を得ています。
-                </div>
-            </div> */}
        
         </div>
     );

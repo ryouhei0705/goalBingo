@@ -1,6 +1,6 @@
 import React, { useState, useEffect,useCallback,useMemo } from 'react';
 import { useRouter } from "next/router";
-import styles from '@/styles/bingo.module.scss'
+import styles from '@/styles/createBingo.module.scss'
 import Image from 'next/image';
 import Head from 'next/head';
 
@@ -23,7 +23,7 @@ const CreateBingo = () => {
     // 全て入力されているか確認
     const filteredGoals = goals.map((g) => g.trim()).filter((g) => g.length > 0);
     if (filteredGoals.length !== 8) {
-      alert("目標は8つ入力してください");
+      alert("目標は必ず8個入力してください");
       return;
     }
 
@@ -51,33 +51,36 @@ const CreateBingo = () => {
         目標ビンゴを作成しよう!!
         </h1>
       {/* 登録フォーム */}
-      <form onSubmit={onSubmit}>
+      <form 
+        className={styles.container}
+        onSubmit={onSubmit}
+        >
         {/* goals配列分入力フォームを設置 */}
         {goals.map((goal, i) => (
             <input
-            className={styles.weapon}
+            className={styles.goalForm}
             type="text"
             value={goal}
             onChange={(e) => updateGoal(i, e.target.value)}
-            placeholder={`目標 ${i + 1}`}
+            // placeholder={`目標 ${i + 1}`}
             />
         ))}
         <button 
-            className={styles.regenerate}
+            className={styles.button}
             type="submit"
         >
             作成
         </button>
       </form>
-      
-        <div className={styles.ruleTitle}>
-            注意
-        </div>
+
+      <div className={styles.container}>
         <div className={styles.ruleText}>
-            ・目標は8つ立ててください。
+            ・目標を8個入力してください。
             <br></br>
             ・個人情報等，他人に知られてはいけないことは入力しないでください。
         </div>
+      </div>
+    
     </div>
   );
 };

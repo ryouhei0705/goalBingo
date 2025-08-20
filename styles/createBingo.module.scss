@@ -1,0 +1,107 @@
+.container{
+    flex-direction: column;
+    max-width: 980px;
+    // min-height: 40vh;
+    margin: auto;
+    padding: 1rem;
+    background: #E9E9E9;
+}
+
+.title{
+    width: 100%;
+    margin: 2rem 0;
+    font-weight: 700;
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    text-align: center;
+
+    color:#E9E9E9;
+    background: #5DA797;
+}
+
+.bingoTable{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cellNoMarke{
+    position: relative;
+    width: 20%;
+    height: 20%;
+    padding-top: 1rem;
+    padding-right: 1.5rem;
+    padding-bottom: 1rem;
+    padding-left: 1.5rem;
+    overflow-y: scroll;
+    border-width: 1px;
+    background: #E9E9E9;
+}
+
+.cellMarked{
+    position: relative;
+    width: 20%;
+    height: 20%;
+    padding-top: 1rem;
+    padding-right: 1.5rem;
+    padding-bottom: 1rem;
+    padding-left: 1.5rem;
+    overflow-y: scroll;
+    border-width: 1px;
+    background: #5DA797;
+}
+
+.goalForm{
+    position: relative;
+    width: 20%;
+    height: 20%;
+
+    // 要素同士の間隔
+    margin: 5px;
+
+    // 要素内の間隔
+    padding-top: 0.7rem;
+    padding-right: 1.0rem;
+    padding-bottom: 0.7rem;
+    padding-left: 1.0rem;
+    overflow-y: scroll;
+    border-width: 1px;
+
+    font-size: 1.0rem;
+
+    border-radius: 3px;
+    outline: 3px solid #454545;
+    background: #E9E9E9;
+    color:#454545;
+}
+
+.button{
+    width: 20%;
+    margin:2rem 40%;
+    padding-top: 0.5rem;
+    padding-right: 1rem;
+    padding-bottom: 0.5rem;
+    padding-left: 1rem;
+
+    font-size: 1.0rem;
+
+    border-radius: 3px;
+    outline: 3px solid #5DA797;
+    background: #5DA797;
+    color: #E9E9E9;
+    &:hover{
+        background: #E9E9E9;
+        color: #5DA797;
+    }
+}
+
+.ruleTitle {
+    color:#454545;
+    font-size: 2rem;
+}
+
+.ruleText {
+    color:#454545;
+    font-size: 1.5rem;
+    padding: 1rem 1rem 0 0;
+}
+

@@ -1,83 +1,118 @@
 .container{
     flex-direction: column;
     max-width: 980px;
-    min-height: 80vh;
+    min-height: 30vh;
     margin: auto;
     padding: 1rem;
-    background: #f3f4f6;
+    background: #E9E9E9;
 }
 
 .title{
     width: 100%;
     margin: 2rem 0;
-    color:#6b7280;
+    color:#454545;
     font-weight: 700;
     font-size: 1.875rem;
     line-height: 2.25rem;
     text-align: center;
 }
 
+.boxContainer{
+    display: flex;
+    justify-content: space-between;
+    max-width: 400px;
+}
+
+.box{
+    width: 30%;
+    background: #eee;
+    position: relative;
+    overflow: hidden;
+}
+.box::before{
+    content: "";
+    padding-top: 100%;
+    display: block;
+}
+.box p{
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 10px;
+    margin: 0;
+}
+
+// ビンゴ全体
 .bingoTable{
-    width: 100%;
-    border-collapse: collapse;
+    // width: 100%;
+    // border-collapse: collapse;
+
+    // display: flex;
+    // justify-content: space-between;
+}
+
+// ビンゴの各行
+.bingoRow{
+    // 親要素の横を基準に縦横の外の間隔を指定，画面が大きい時の最大サイズも指定
+    margin-top: calc(min(5%, 15px));
+    margin-bottom: calc(min(5%, 15px));
+
+    // 親要素を基準に左右の中央に配置
+    margin-left: auto; margin-right: auto;
+
+    // 画面が大きい時に横の最大サイズを指定
+    max-width: 300px;
+
+    // 子要素を等間隔に配置
+    display: flex;
+    justify-content: space-between;
+}
+
+// ビンゴの各セル
+.cell{
+    // 親要素の横幅を基準に横幅のサイズを決定
+    width: 30%;
+
+    // 縦幅を横幅同じにする
+    aspect-ratio: 1 / 1;
+
+    position: relative;
+    // はみ出した文字は隠す
+    overflow: hidden;
+
+    // 輪郭
+    border-radius: 10px;
+    outline: 3px solid #5DA797;
+    
+    // 子要素を上下左右の中央に配置
+    display: flex;             
+    justify-content: center;    
+    align-items: center; 
+}
+
+// ビンゴの各セルの文字
+.cell p{
+    margin: 5px;
+    max-height: 100%;
 }
 
 .cellNoMarke{
-    position: relative;
-    width: 20%;
-    height: 20%;
-    padding-top: 1rem;
-    padding-right: 1.5rem;
-    padding-bottom: 1rem;
-    padding-left: 1.5rem;
-    overflow-y: scroll;
-    border-width: 1px;
-    background: white;
+    background: #E9E9E9;
+    color:#454545;
 }
 
 .cellMarked{
-    position: relative;
-    width: 20%;
-    height: 20%;
-    padding-top: 1rem;
-    padding-right: 1.5rem;
-    padding-bottom: 1rem;
-    padding-left: 1.5rem;
-    overflow-y: scroll;
-    border-width: 1px;
-    background: #b3ffcc;
-}
-
-.weapon{
-    color:#6b7280;
-}
-
-.stage {
-    color: #6b7280;
-}
-
-.regenerate{
-    width: 20%;
-    margin:2rem 40%;
-    padding-top: 0.5rem;
-    padding-right: 1rem;
-    padding-bottom: 0.5rem;
-    padding-left: 1rem;
-    border-radius: 0.25rem;
-    background: #3b82f6;
-    color: white;
-    &:hover{
-        background: #2563eb;
-    }
+    background: #5DA797;
+    color:#E9E9E9;
 }
 
 .ruleTitle {
-    color:#6b7280;
+    color:#454545;
     font-size: 2rem;
 }
 
 .ruleText {
-    color:#6b7280;
+    color:#454545;
     font-size: 1.5rem;
     padding: 1rem 1rem 0 0;
 }
