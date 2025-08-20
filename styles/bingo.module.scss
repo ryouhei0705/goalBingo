@@ -17,38 +17,9 @@
     text-align: center;
 }
 
-.boxContainer{
-    display: flex;
-    justify-content: space-between;
-    max-width: 400px;
-}
-
-.box{
-    width: 30%;
-    background: #eee;
-    position: relative;
-    overflow: hidden;
-}
-.box::before{
-    content: "";
-    padding-top: 100%;
-    display: block;
-}
-.box p{
-    position: absolute;
-    top: 0;
-    left: 0;
-    padding: 10px;
-    margin: 0;
-}
-
 // ビンゴ全体
 .bingoTable{
-    // width: 100%;
-    // border-collapse: collapse;
-
-    // display: flex;
-    // justify-content: space-between;
+    
 }
 
 // ビンゴの各行
@@ -105,15 +76,3 @@
     background: #5DA797;
     color:#E9E9E9;
 }
-
-.ruleTitle {
-    color:#454545;
-    font-size: 2rem;
-}
-
-.ruleText {
-    color:#454545;
-    font-size: 1.5rem;
-    padding: 1rem 1rem 0 0;
-}
-

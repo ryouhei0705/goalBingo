@@ -19,50 +19,20 @@
     background: #5DA797;
 }
 
-.bingoTable{
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.cellNoMarke{
-    position: relative;
-    width: 20%;
-    height: 20%;
-    padding-top: 1rem;
-    padding-right: 1.5rem;
-    padding-bottom: 1rem;
-    padding-left: 1.5rem;
-    overflow-y: scroll;
-    border-width: 1px;
-    background: #E9E9E9;
-}
-
-.cellMarked{
-    position: relative;
-    width: 20%;
-    height: 20%;
-    padding-top: 1rem;
-    padding-right: 1.5rem;
-    padding-bottom: 1rem;
-    padding-left: 1.5rem;
-    overflow-y: scroll;
-    border-width: 1px;
-    background: #5DA797;
-}
-
+// 目標の入力フォーム
 .goalForm{
     position: relative;
-    width: 20%;
+    width: 45%;
     height: 20%;
 
     // 要素同士の間隔
     margin: 5px;
 
     // 要素内の間隔
-    padding-top: 0.7rem;
-    padding-right: 1.0rem;
-    padding-bottom: 0.7rem;
-    padding-left: 1.0rem;
+    padding-top: 0.5rem;
+    padding-right: 0.7rem;
+    padding-bottom: 0.5rem;
+    padding-left: 0.7rem;
     overflow-y: scroll;
     border-width: 1px;
 
@@ -74,6 +44,7 @@
     color:#454545;
 }
 
+// 作成ボタン
 .button{
     width: 20%;
     margin:2rem 40%;
