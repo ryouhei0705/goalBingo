@@ -58,6 +58,7 @@ const CreateBingo = () => {
         {/* goals配列分入力フォームを設置 */}
         {goals.map((goal, i) => (
             <input
+            key={i}
             className={styles.goalForm}
             type="text"
             value={goal}
