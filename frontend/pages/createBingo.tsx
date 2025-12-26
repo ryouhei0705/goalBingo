@@ -38,7 +38,7 @@ const CreateBingo = () => {
         }
 
         // 内部APIを呼び出して，目標を登録
-        const res = await fetch("http://localhost:8080/api/createGoals", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/createGoals`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ goals: filteredGoals }),

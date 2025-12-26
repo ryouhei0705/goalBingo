@@ -8,7 +8,7 @@ import Link from 'next/link';
 
 // apiのベースurl
 // const BASE_URL = "https://script.google.com/macros/s/AKfycbyJN6CWNVMbqN4lQm4b_I9r9Itdug4nVv9-gHMlGkf-t8iF31MwxwewqzFBZjTQ3vJ4/exec";
-const BASE_URL = "http://localhost:8080/api/goals";
+const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/goals`;
 
 // apiから受け取るデータを変換する型
 type GoalRow = { bingoId: string; goal: string };
