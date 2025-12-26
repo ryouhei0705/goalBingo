@@ -1,6 +1,6 @@
 -- 1. データベースの作成（TiDB Cloud上で行う場合）
-CREATE DATABASE IF NOT EXISTS goal_bingo_dev;
-USE goal_bingo_dev;
+-- CREATE DATABASE IF NOT EXISTS goal_bingo_dev;
+-- USE goal_bingo_dev;
 
 -- 2. 親テーブル：ビンゴ本体
 CREATE TABLE IF NOT EXISTS bingos (
