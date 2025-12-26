@@ -3,7 +3,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { nanoid } from "nanoid";
 
 // 外部APIのベースURL
-const BASE_URL = "https://script.google.com/macros/s/AKfycbyJN6CWNVMbqN4lQm4b_I9r9Itdug4nVv9-gHMlGkf-t8iF31MwxwewqzFBZjTQ3vJ4/exec";
+// const BASE_URL = "https://script.google.com/macros/s/AKfycbyJN6CWNVMbqN4lQm4b_I9r9Itdug4nVv9-gHMlGkf-t8iF31MwxwewqzFBZjTQ3vJ4/exec";
+const BASE_URL = "http://localhost:8080/api/goals";
 
 // 目標を外部APIを呼び出して，データベースに登録する
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
