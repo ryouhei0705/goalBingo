@@ -28,12 +28,12 @@ var db *sql.DB
 func main() {
 	// Railwayが提供する環境変数から接続情報を取得
 	dbUser := os.Getenv("MYSQLUSER")
-    dbPass := os.Getenv("MYSQLPASSWORD")
-    dbHost := os.Getenv("MYSQLHOST")
-    dbPort := os.Getenv("MYSQLPORT")
-    dbName := os.Getenv("MYSQLDATABASE")
+	dbPass := os.Getenv("MYSQLPASSWORD")
+	dbHost := os.Getenv("MYSQLHOST")
+	dbPort := os.Getenv("MYSQLPORT")
+	dbName := os.Getenv("MYSQLDATABASE")
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
-	 dbUser, dbPass, dbHost, dbPort, dbName)
+		dbUser, dbPass, dbHost, dbPort, dbName)
 
 	var err error
 	db, err = sql.Open("mysql", dsn)
@@ -87,7 +87,9 @@ func handleGoals(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := db.Query("SELECT bingo_id, content FROM goal_items WHERE bingo_id = ?", bingoId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("ERROR: データベース goal_items WHERE bingo_id = (%v) の取得に失敗しました: %v \n", bingoId, err)
+
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
@@ -128,7 +130,9 @@ func handleCreate(w http.ResponseWriter, r *http.Request) {
 	_, err := tx.Exec("INSERT INTO bingos (id, title) VALUES (?, ?)", newBingoId, "マイビンゴ")
 	if err != nil {
 		tx.Rollback()
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("ERROR: データベース bingos (id, title) = (%v, %v)の保存に失敗しました: %v \n", newBingoId, "マイビンゴ", err)
+
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
@@ -139,7 +143,9 @@ func handleCreate(w http.ResponseWriter, r *http.Request) {
 			itemId, newBingoId, goalText, false)
 		if err != nil {
 			tx.Rollback()
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Printf("ERROR: データベース goal_items (id, bingo_id, content, is_achieved) = (%v, %v, %v, %v)の保存に失敗しました: %v \n", itemId, newBingoId, goalText, false, err)
+
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 	}
