@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 )
 
 // フロントエンドの GoalRow 型に合わせる
@@ -25,21 +27,42 @@ type CreateRequest struct {
 
 var db *sql.DB
 
+func initDB() (*sql.DB, error) {
+	cfg := mysql.Config{
+		User:      os.Getenv("MYSQLUSER"),
+		Passwd:    os.Getenv("MYSQLPASSWORD"),
+		Net:       "tcp",
+		Addr:      fmt.Sprintf("%s:%s", os.Getenv("MYSQLHOST"), os.Getenv("MYSQLPORT")),
+		DBName:    os.Getenv("MYSQLDATABASE"),
+		ParseTime: true,
+	}
+
+	// DSNを生成して接続を開く
+	db, err := sql.Open("mysql", cfg.FormatDSN())
+	if err != nil {
+		return nil, err
+	}
+
+	// 実際に接続できるか確認（Ping）
+	if err := db.Ping(); err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
 func main() {
-	// Railwayが提供する環境変数から接続情報を取得
-	dbUser := os.Getenv("MYSQLUSER")
-	dbPass := os.Getenv("MYSQLPASSWORD")
-	dbHost := os.Getenv("MYSQLHOST")
-	dbPort := os.Getenv("MYSQLPORT")
-	dbName := os.Getenv("MYSQLDATABASE")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
-		dbUser, dbPass, dbHost, dbPort, dbName)
+	// ローカル実行時のみ .env を読み込む
+	godotenv.Load()
 
 	var err error
-	db, err = sql.Open("mysql", dsn)
+	db, err = initDB()
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
+
+	log.Printf("DB接続に成功しました（ユーザー %v）\n", os.Getenv("MYSQLUSER"))
 
 	// apiリクエストを処理する関数を仕分ける
 	mux := http.NewServeMux()
