@@ -1,8 +1,10 @@
-import React, { useState, useEffect,useCallback,useMemo } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from "next/router";
 import styles from '@/styles/createBingo.module.scss'
-import Image from 'next/image';
-import Head from 'next/head';
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createRequestSchema, CreateRequest } from "../schemas/bingo";
 
 // 目標の入力フォームの初期値
 const INITIAL_GOALS = Array(8).fill("");
@@ -11,52 +13,61 @@ const INITIAL_GOALS = Array(8).fill("");
 const CreateBingo = () => {
   // 作成ボタン入力後のローディングを管理
   const [loading, setLoading] = useState(false);
-
-  // 8個の入力欄を用意（初期値は空文字）
-  const [goals, setGoals] = useState<string[]>(INITIAL_GOALS);
   const router = useRouter();
 
-//   配列の更新用
+  // react-hook-formの設定
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<CreateRequest>({
+    resolver: zodResolver(createRequestSchema),
+    defaultValues: {
+      goals: INITIAL_GOALS,
+    },
+    mode: "onChange", // リアルタイムでバリデーション
+  });
+
+  // 現在の入力値を監視
+  const goals = watch("goals") || INITIAL_GOALS;
+
+  // 配列の更新用
   function updateGoal(index: number, value: string) {
-    const copy = [...goals];
-    copy[index] = value;
-    setGoals(copy);
+    const newGoals = [...goals];
+    newGoals[index] = value;
+    setValue(`goals.${index}`, value, { shouldValidate: true });
   }
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(data: CreateRequest) {
     // ローディング開始
     setLoading(true); 
 
-    try{
-        e.preventDefault();
-
-        // 全て入力されているか確認
-        const filteredGoals = goals.map((g) => g.trim()).filter((g) => g.length > 0);
-        if (filteredGoals.length !== 8) {
-            alert("目標は必ず8個入力してください");
-        return;
-        }
+    try {
+        // トリム処理
+        const trimmedGoals = data.goals.map((g) => g.trim());
 
         // 内部APIを呼び出して，目標を登録
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/createGoals`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ goals: filteredGoals }),
+            body: JSON.stringify({ goals: trimmedGoals }),
         });
 
         // 内部APIを問題なく動作できたか確認
         const json = await res.json();
         if (!res.ok) {
             alert(json.error ?? "登録に失敗しました");
-        return;
+            return;
         }
 
         // 目標の入力値を初期化
-        setGoals(INITIAL_GOALS);
+        setValue("goals", INITIAL_GOALS);
 
         // サーバーが生成した bingoId を受け取り、詳細ページに遷移
         router.push(`/33bingos/${encodeURIComponent(json.bingoId)}`);
-    }finally{
+    } finally {
         // 画面遷移後にローディング終了
         setLoading(false); 
     }
@@ -70,19 +81,38 @@ const CreateBingo = () => {
       {/* 登録フォーム */}
       <form 
         className={styles.container}
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         >
         {/* goals配列分入力フォームを設置 */}
-        {goals.map((goal, i) => (
-            <input
-            key={i}
-            className={styles.goalForm}
-            type="text"
-            value={goal}
-            onChange={(e) => updateGoal(i, e.target.value)}
-            // placeholder={`目標 ${i + 1}`}
-            />
-        ))}
+        {goals.map((goal: string, i: number) => {
+          const { onChange, ...registerProps } = register(`goals.${i}`);
+          return (
+            <div key={i}>
+              <input
+                className={styles.goalForm}
+                type="text"
+                value={goal}
+                {...registerProps}
+                onChange={(e) => {
+                  updateGoal(i, e.target.value);
+                  onChange(e);
+                }}
+                // placeholder={`目標 ${i + 1}`}
+              />
+              {errors.goals?.[i] && (
+                <p style={{ color: 'red', fontSize: '0.875rem', marginTop: '0.25rem' }}>
+                  {errors.goals[i]?.message}
+                </p>
+              )}
+            </div>
+          );
+        })}
+        {/* 配列全体のエラー（8個未満の場合など） */}
+        {errors.goals && typeof errors.goals.message === 'string' && (
+          <p style={{ color: 'red', fontSize: '0.875rem', marginTop: '0.25rem' }}>
+            {errors.goals.message}
+          </p>
+        )}
         <button 
             className={styles.button}
             type="submit"
@@ -103,6 +133,8 @@ const CreateBingo = () => {
       <div className={styles.container}>
         <div className={styles.ruleText}>
             ・目標を8個入力してください。
+            <br></br>
+            ・目標は日本語または英数字(30文字以内)で入力してください。
             <br></br>
             ・個人情報等，他人に知られてはいけないことは入力しないでください。
         </div>

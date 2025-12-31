@@ -7,12 +7,19 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 
+	validator "github.com/go-playground/validator/v10"
 	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 )
+
+// readのapiのリクエスト形式
+type ReadRequest struct {
+	BingoID string `validate:"required,uuid"`
+}
 
 // フロントエンドの GoalRow 型に合わせる
 type GoalRow struct {
@@ -20,9 +27,21 @@ type GoalRow struct {
 	Goal    string `json:"goal"`
 }
 
-// フロントエンドの送信形式に合わせる
+// createのapiのリクエスト形式
 type CreateRequest struct {
-	Goals []string `json:"goals"`
+	Goals []string `json:"goals" 
+	validate:"required,len=8,dive,required,min=1,max=30,japanese_alphanum"`
+}
+
+// 日本語（ひらがな・カタカナ・漢字）と英数字を許可する正規表現
+// ひらがな: \x3040-\x309F
+// カタカナ: \x30A0-\x30FF
+// 漢字: \x4E00-\x9FAF
+var jpAlphanumRegex = regexp.MustCompile(`^[a-zA-Z0-9\x3040-\x309F\x30A0-\x30FF\x4E00-\x9FAF]+$`)
+
+// 日本語（ひらがな・カタカナ・漢字）と英数字をバリデーションするカスタム関数
+func japaneseAlphanum(fl validator.FieldLevel) bool {
+	return jpAlphanumRegex.MatchString(fl.Field().String())
 }
 
 var db *sql.DB
@@ -82,8 +101,7 @@ func main() {
 // CORSミドルウェア
 func withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // Next.jsからのアクセスを許可
-		w.Header().Set("Access-Control-Allow-Origin", "https://goal-bingo.vercel.app") // Next.jsからのアクセスを許可
+		w.Header().Set("Access-Control-Allow-Origin", os.Getenv("FRONTENDURL")) // Next.jsからのアクセスを許可
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
@@ -102,9 +120,16 @@ func handleGoals(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// クエリからbingoIdを取得
 	bingoId := r.URL.Query().Get("bingoId")
-	if bingoId == "" {
-		http.Error(w, "bingoId is required", http.StatusBadRequest)
+	query := ReadRequest{
+		BingoID: bingoId,
+	}
+
+	// バリデーションチェック
+	validate := validator.New()
+	if err := validate.Struct(query); err != nil {
+		http.Error(w, "無効なクエリです。", http.StatusBadRequest)
 		return
 	}
 
@@ -141,6 +166,14 @@ func handleCreate(w http.ResponseWriter, r *http.Request) {
 	var req CreateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	// バリデーションチェック
+	validate := validator.New()
+	validate.RegisterValidation("japanese_alphanum", japaneseAlphanum)
+	if err := validate.Struct(req); err != nil {
+		http.Error(w, "入力内容が正しくありません: 8個の目標を、日本語または英数字(1-30文字)で入力してください", http.StatusBadRequest)
+		fmt.Printf("Validation Error: %v\n", err)
 		return
 	}
 
