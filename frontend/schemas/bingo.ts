@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // 日本語（ひらがな・カタカナ・漢字）と英数字を許可する正規表現
 // ひらがな: \u3040-\u309F
-// カタカナ: \u30A0-\u30FF  
+// カタカナ: \u30A0-\u30FF
 // 漢字: \u4E00-\u9FAF
 const jpAlphanumRegex = /^[a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+$/;
 

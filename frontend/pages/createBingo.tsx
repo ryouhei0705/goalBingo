@@ -45,31 +45,28 @@ const CreateBingo = () => {
     setLoading(true); 
 
     try {
-        // トリム処理
-        const trimmedGoals = data.goals.map((g) => g.trim());
+      // 内部APIを呼び出して，目標を登録
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/createGoals`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ goals: data.goals }),
+      });
 
-        // 内部APIを呼び出して，目標を登録
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/createGoals`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ goals: trimmedGoals }),
-        });
+      // 内部APIを問題なく動作できたか確認
+      const json = await res.json();
+      if (!res.ok) {
+          alert(json.error ?? "登録に失敗しました");
+          return;
+      }
 
-        // 内部APIを問題なく動作できたか確認
-        const json = await res.json();
-        if (!res.ok) {
-            alert(json.error ?? "登録に失敗しました");
-            return;
-        }
+      // 目標の入力値を初期化
+      setValue("goals", INITIAL_GOALS);
 
-        // 目標の入力値を初期化
-        setValue("goals", INITIAL_GOALS);
-
-        // サーバーが生成した bingoId を受け取り、詳細ページに遷移
-        router.push(`/33bingos/${encodeURIComponent(json.bingoId)}`);
+      // サーバーが生成した bingoId を受け取り、詳細ページに遷移
+      router.push(`/33bingos/${encodeURIComponent(json.bingoId)}`);
     } finally {
-        // 画面遷移後にローディング終了
-        setLoading(false); 
+      // 画面遷移後にローディング終了
+      setLoading(false); 
     }
   }
 

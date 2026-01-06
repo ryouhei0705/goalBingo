@@ -29,8 +29,7 @@ type GoalRow struct {
 
 // createのapiのリクエスト形式
 type CreateRequest struct {
-	Goals []string `json:"goals" 
-	validate:"required,len=8,dive,required,min=1,max=30,japanese_alphanum"`
+	Goals []string `json:"goals" validate:"required,len=8,dive,required,min=1,max=30,japanese_alphanum"`
 }
 
 // 日本語（ひらがな・カタカナ・漢字）と英数字を許可する正規表現
@@ -45,6 +44,11 @@ func japaneseAlphanum(fl validator.FieldLevel) bool {
 }
 
 var db *sql.DB
+var validate = validator.New()
+
+func init() {
+	validate.RegisterValidation("japanese_alphanum", japaneseAlphanum)
+}
 
 func initDB() (*sql.DB, error) {
 	cfg := mysql.Config{
@@ -81,7 +85,7 @@ func main() {
 	}
 	defer db.Close()
 
-	log.Printf("DB接続に成功しました（ユーザー %v）\n", os.Getenv("MYSQLUSER"))
+	log.Printf("DB接続に成功しました\n")
 
 	// apiリクエストを処理する関数を仕分ける
 	mux := http.NewServeMux()
@@ -127,7 +131,6 @@ func handleGoals(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// バリデーションチェック
-	validate := validator.New()
 	if err := validate.Struct(query); err != nil {
 		http.Error(w, "無効なクエリです。", http.StatusBadRequest)
 		return
@@ -169,11 +172,9 @@ func handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// バリデーションチェック
-	validate := validator.New()
-	validate.RegisterValidation("japanese_alphanum", japaneseAlphanum)
 	if err := validate.Struct(req); err != nil {
 		http.Error(w, "入力内容が正しくありません: 8個の目標を、日本語または英数字(1-30文字)で入力してください", http.StatusBadRequest)
-		fmt.Printf("Validation Error: %v\n", err)
+		log.Printf("Validation Error: %v\n", err)
 		return
 	}
 
