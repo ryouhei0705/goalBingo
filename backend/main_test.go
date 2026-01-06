@@ -125,8 +125,8 @@ func TestHandleCreate_Success(t *testing.T) {
 		WithArgs(sqlmock.AnyArg(), "マイビンゴ").
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	// 3つの目標を挿入
-	for i := 0; i < 3; i++ {
+	// 8つの目標を挿入
+	for i := 0; i < 8; i++ {
 		mock.ExpectExec("INSERT INTO goal_items").
 			WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), false).
 			WillReturnResult(sqlmock.NewResult(1, 1))
@@ -136,7 +136,10 @@ func TestHandleCreate_Success(t *testing.T) {
 
 	// リクエストボディを作成
 	reqBody := CreateRequest{
-		Goals: []string{"目標1", "目標2", "目標3"},
+		Goals: []string{
+			"目標1", "目標2", "目標3", "目標4",
+			"目標5", "目標6", "目標7", "目標8",
+		},
 	}
 	bodyBytes, _ := json.Marshal(reqBody)
 

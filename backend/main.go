@@ -33,10 +33,10 @@ type CreateRequest struct {
 }
 
 // 日本語（ひらがな・カタカナ・漢字）と英数字を許可する正規表現
-// ひらがな: \x3040-\x309F
-// カタカナ: \x30A0-\x30FF
-// 漢字: \x4E00-\x9FAF
-var jpAlphanumRegex = regexp.MustCompile(`^[a-zA-Z0-9\x3040-\x309F\x30A0-\x30FF\x4E00-\x9FAF]+$`)
+// ひらがな: \u3040-\u309F
+// カタカナ: \u30A0-\u30FF
+// 漢字: \u4E00-\u9FAF
+var jpAlphanumRegex = regexp.MustCompile("^[a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+$")
 
 // 日本語（ひらがな・カタカナ・漢字）と英数字をバリデーションするカスタム関数
 func japaneseAlphanum(fl validator.FieldLevel) bool {
