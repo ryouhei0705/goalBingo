@@ -1,0 +1,94 @@
+name: Daily Security Check
+
+on:
+  schedule:
+    # 毎日 UTC 0:00 (日本時間 9:00) に実行
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 手動実行用ボタン
+
+jobs:
+  # --- Go (Backend) のセキュリティチェック ---
+  backend-security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+          cache: true
+
+        # govulncheck (Goの依存関係の脆弱性チェック)
+      - name: Install govulncheck dependencies
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run govulncheck
+        run: govulncheck ./...
+
+        # gosec (Goの静的解析セキュリティテストツール)
+      - name: Install gosec dependencies
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+      
+      - name: Run gosec   
+        run: gosec -severity medium ./...
+
+  # --- Next.js (Frontend) のセキュリティチェック ---
+  frontend-security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+        # Next.jsの依存関係の脆弱性チェック
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+   
+        # TypeScriptの型チェック
+      - name: Type Check
+        run: npx tsc --noEmit
+
+        # 静的解析チェック
+      - name: Run ESLint (eslint-plugin-security)
+        run: npx eslint "**/*.{js,jsx,ts,tsx}"
+
+  # --- 動的セキュリティチェック (OWASP ZAP) ---
+  zap-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: OWASP ZAP Baseline Scan (Passive)
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          # ここにスキャン対象のURLを指定
+          target: 'https://goal-bingo.vercel.app'
+          fail_action: false # 脆弱性が見つかってもActionを失敗させない
+
+          # -a : 一部アクティブスキャンを実施
+          # -m 5 : 最大5分間スキャン
+          # -T 1 : タイムアウト1分
+          cmd_options: '-a -m 5 -T 1'
+
+        # スキャン結果を保存する
+      - name: Upload ZAP scan reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-scan-reports
+          # 一般的な ZAP Baseline のレポートファイル名にマッチするパターンを指定
+          path: |
+            zap-*.html
+            zap-*.json

@@ -1,0 +1,33 @@
+name: Go Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    # backendディレクトリ内でコマンドを実行するように指定
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+          cache: true        # 依存関係をキャッシュして高速化
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Run tests
+        # -v オプションで詳細なログを出力します
+        run: go test -v ./...
