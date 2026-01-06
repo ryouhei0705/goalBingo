@@ -5,7 +5,8 @@ import Bingo from '../bingo';
 import CreateBingo from '../createBingo';
 import Head from 'next/head';
 import Link from 'next/link';
-
+import { readRequestSchema } from '../../schemas/bingo';
+ 
 // apiのベースurl
 // const BASE_URL = "https://script.google.com/macros/s/AKfycbyJN6CWNVMbqN4lQm4b_I9r9Itdug4nVv9-gHMlGkf-t8iF31MwxwewqzFBZjTQ3vJ4/exec";
 const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/goals`;
@@ -20,8 +21,18 @@ export const getServerSideProps: GetServerSideProps<{goals: string[]}>
     // URL が /33bingos/123 のとき → bingoId = "123"
   const bingoId = params!.bingoId as string;
 
+  // bingoIdのバリデーション
+  const validationResult = readRequestSchema.safeParse({ bingoId });
+  if (!validationResult.success) {
+    // バリデーションエラーの場合は404を返す
+    return { notFound: true };
+  }
+
+  // バリデーション済みのbingoIdを使用
+  const validatedBingoId = validationResult.data.bingoId;
+
     // apiを使用して{bingoId}の目標をデータベースから取得
-  const res = await fetch(`${BASE_URL}?bingoId=${bingoId}`);
+  const res = await fetch(`${BASE_URL}?bingoId=${validatedBingoId}`);
 
 //   apiから問題なくデータを取得できたか確認
   if (!res.ok) {
