@@ -34,7 +34,7 @@ jobs:
         run: go install github.com/securego/gosec/v2/cmd/gosec@latest
       
       - name: Run gosec   
-        run: gosec -severity medium -out=results.json ./...
+        run: gosec -severity medium ./...
 
   # --- Next.js (Frontend) のセキュリティチェック ---
   frontend-security:
@@ -80,8 +80,8 @@ jobs:
 
           # -a : 一部アクティブスキャンを実施
           # -m 5 : 最大5分間スキャン
-          # -t 60 : タイムアウト60秒
-          cmd_options: '-a -m 5 -t 60'
+          # -T 1 : タイムアウト1分
+          cmd_options: '-a -m 5 -T 1'
 
         # スキャン結果を保存する
       - name: Upload ZAP scan reports
