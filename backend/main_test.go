@@ -25,17 +25,18 @@ func TestHandleGoals_Success(t *testing.T) {
 	defer func() { db = oldDB }()
 
 	// モックの期待値を設定
+	testBingoID := "550e8400-e29b-41d4-a716-446655440000"
 	rows := sqlmock.NewRows([]string{"bingo_id", "content"}).
-		AddRow("test-bingo-123", "目標1").
-		AddRow("test-bingo-123", "目標2").
-		AddRow("test-bingo-123", "目標3")
+		AddRow(testBingoID, "目標1").
+		AddRow(testBingoID, "目標2").
+		AddRow(testBingoID, "目標3")
 
 	mock.ExpectQuery("SELECT bingo_id, content FROM goal_items WHERE bingo_id = ?").
-		WithArgs("test-bingo-123").
+		WithArgs(testBingoID).
 		WillReturnRows(rows)
 
 	// テストリクエストを作成
-	req, err := http.NewRequest("GET", "/api/goals?bingoId=test-bingo-123", nil)
+	req, err := http.NewRequest("GET", "/api/goals?bingoId="+testBingoID, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -205,6 +206,9 @@ func TestHandleCreate_InvalidJSON(t *testing.T) {
 
 // TestWithCORS は、CORSミドルウェアの動作をテストします
 func TestWithCORS(t *testing.T) {
+	// 環境変数を設定
+	t.Setenv("FRONTENDURL", "https://goal-bingo.vercel.app")
+
 	// ダミーハンドラーを作成
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
