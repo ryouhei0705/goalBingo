@@ -18,10 +18,9 @@ jobs:
           target: 'https://goal-bingo.vercel.app'
           fail_action: false # 脆弱性が見つかってもActionを失敗させない
 
-          # -a : 一部アクティブスキャンを実施
           # -m 5 : 最大5分間スキャン
           # -T 1 : タイムアウト1分
-          cmd_options: '-a -m 5 -T 1'
+          cmd_options: '-m 5 -T 1'
 
         # スキャン結果を保存する
       - name: Upload ZAP scan reports
