@@ -155,7 +155,7 @@ func handleGoals(w http.ResponseWriter, r *http.Request) {
 		results = append(results, g)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(results)
 }
 
@@ -210,6 +210,6 @@ func handleCreate(w http.ResponseWriter, r *http.Request) {
 	tx.Commit()
 
 	// フロントエンドが期待する {"bingoId": "..."} を返す
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(map[string]string{"bingoId": newBingoId})
 }
