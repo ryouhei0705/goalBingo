@@ -1,0 +1,34 @@
+name: Monthly Security Check
+
+on:
+  schedule:
+    # 毎月1日 UTC 0:00 (日本時間 9:00) に実行
+    - cron: '0 0 1 * *'
+  workflow_dispatch: # 手動実行用ボタン
+
+jobs:
+  # --- 動的セキュリティチェック (OWASP ZAP) ---
+  zap-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: OWASP ZAP Baseline Scan (Passive)
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          # ここにスキャン対象のURLを指定
+          target: 'https://goal-bingo.vercel.app'
+          fail_action: false # 脆弱性が見つかってもActionを失敗させない
+
+          # -a : 一部アクティブスキャンを実施
+          # -m 5 : 最大5分間スキャン
+          # -T 1 : タイムアウト1分
+          cmd_options: '-a -m 5 -T 1'
+
+        # スキャン結果を保存する
+      - name: Upload ZAP scan reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-scan-reports
+          # 一般的な ZAP Baseline のレポートファイル名にマッチするパターンを指定
+          path: |
+            zap-*.html
+            zap-*.json
