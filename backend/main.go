@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"time"
 
 	validator "github.com/go-playground/validator/v10"
 	"github.com/go-sql-driver/mysql"
@@ -98,8 +100,19 @@ func main() {
 		// ローカル実行用のデフォルトポート
 		port = "8080"
 	}
+
+	// タイムアウト設定を持つHTTPサーバーを作成
+	server := &http.Server{
+		Addr:           ":" + port,
+		Handler:        withCORS(mux),
+		ReadTimeout:    15 * time.Second, // リクエストの読み取りタイムアウト
+		WriteTimeout:   15 * time.Second, // レスポンスの書き込みタイムアウト
+		IdleTimeout:    60 * time.Second, // Keep-Alive接続のアイドルタイムアウト
+		MaxHeaderBytes: 1 << 20,          // 最大ヘッダーサイズ（1MB）
+	}
+
 	fmt.Printf("サーバー起動: http://localhost:%s\n", port)
-	log.Fatal(http.ListenAndServe(":"+port, withCORS(mux)))
+	log.Fatal(server.ListenAndServe())
 }
 
 // CORSミドルウェア
@@ -136,7 +149,11 @@ func handleGoals(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := db.Query("SELECT bingo_id, content FROM goal_items WHERE bingo_id = ?", bingoId)
+	// データベースクエリ用のコンテキストにタイムアウトを設定（10秒）
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	rows, err := db.QueryContext(ctx, "SELECT bingo_id, content FROM goal_items WHERE bingo_id = ?", bingoId)
 	if err != nil {
 		log.Printf("ERROR: データベース goal_items WHERE bingo_id = (%v) の取得に失敗しました: %v \n", bingoId, err)
 
@@ -181,10 +198,19 @@ func handleCreate(w http.ResponseWriter, r *http.Request) {
 	// 1. 新しい BingoID を生成
 	newBingoId := uuid.New().String()
 
-	tx, _ := db.Begin()
+	// データベーストランザクション用のコンテキストにタイムアウトを設定（10秒）
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Printf("ERROR: トランザクション開始に失敗しました: %v\n", err)
+		return
+	}
 
 	// 2. 親テーブルに保存
-	_, err := tx.Exec("INSERT INTO bingos (id, title) VALUES (?, ?)", newBingoId, "マイビンゴ")
+	_, err = tx.ExecContext(ctx, "INSERT INTO bingos (id, title) VALUES (?, ?)", newBingoId, "マイビンゴ")
 	if err != nil {
 		tx.Rollback()
 		log.Printf("ERROR: データベース bingos (id, title) = (%v, %v)の保存に失敗しました: %v \n", newBingoId, "マイビンゴ", err)
@@ -196,7 +222,7 @@ func handleCreate(w http.ResponseWriter, r *http.Request) {
 	// 3. 子テーブルに8つの目標を保存
 	for _, goalText := range req.Goals {
 		itemId := uuid.New().String()
-		_, err := tx.Exec("INSERT INTO goal_items (id, bingo_id, content, is_achieved) VALUES (?, ?, ?, ?)",
+		_, err = tx.ExecContext(ctx, "INSERT INTO goal_items (id, bingo_id, content, is_achieved) VALUES (?, ?, ?, ?)",
 			itemId, newBingoId, goalText, false)
 		if err != nil {
 			tx.Rollback()
