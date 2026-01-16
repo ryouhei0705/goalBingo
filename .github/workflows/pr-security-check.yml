@@ -79,13 +79,13 @@ jobs:
       - name: Run npm audit
         run: |
           npm audit --audit-level=high --json > audit-results.json || true
-          jq -r '.vulnerabilities | to_entries[] | "\(.key): \(.value.severity) - \(.value.via[0].title // .value.via[0])"' audit-results.json | reviewdog -efm="%m" -name="npm audit" -reporter=github-pr-review -filter-mode=nofilter
+          jq -r '.vulnerabilities | to_entries[] | "package.json:1:1: \(.key): \(.value.severity) - \(.value.via[0].title // .value.via[0])"' audit-results.json | reviewdog -efm="%f:%l:%c: %m" -name="npm audit" -reporter=github-pr-review -filter-mode=diff
         continue-on-error: true
    
       # TypeScriptの型チェック
       - name: Type Check
         run: |
-          npx tsc --noEmit --pretty false 2>&1 | reviewdog -efm="%f(%l,%c): error TS%n: %m" -name="TypeScript" -reporter=github-pr-review -filter-mode=diff
+          npx tsc --noEmit --pretty false 2>&1 | reviewdog -efm="%f(%l,%c): error TS%n: %" -name="TypeScript" -reporter=github-pr-review -filter-mode=diff
         continue-on-error: true
 
       # 静的解析チェック
