@@ -1,0 +1,108 @@
+name: PR Security Check
+
+on:
+  pull_request:
+
+jobs:
+  # --- Go (Backend) のセキュリティチェック ---
+  backend-security:
+    runs-on: ubuntu-latest
+    env:
+      REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+          cache: true
+
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
+      # govulncheck (Goの依存関係の脆弱性チェック)
+      - name: Install govulncheck dependencies
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run govulncheck
+        # govulncheck を JSON 出力で実行し、結果をファイルに保存する
+        # JSON からファイル名・行・列・メッセージを抽出して reviewdog が解釈できる形式に変換する
+        run: |
+          govulncheck -json ./... > govulncheck.json || true
+          jq -r '
+            select(.Report != null)
+            | .Report.Vulnerabilities[]? as $v
+            | $v.Modules[]?
+            | .Packages[]?
+            | .CallStacks[]?
+            | .Frames[]?
+            | "\(.Pos.Filename):\(.Pos.Line):\(.Pos.Column // 1): \($v.Summary)"
+          ' govulncheck.json \
+            | reviewdog -efm="%f:%l:%c: %m" -name="govulncheck" -reporter=github-pr-review -filter-mode=diff
+        continue-on-error: true
+
+      # gosec (Goの静的解析セキュリティテストツール)
+      - name: Install gosec dependencies
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+      
+      - name: Run gosec
+        run: |
+          gosec -severity medium -fmt=sarif -out=results.sarif ./... || true
+          cat results.sarif | reviewdog -f=sarif -name="gosec" -reporter=github-pr-review -filter-mode=diff
+        continue-on-error: true
+
+  # --- Next.js (Frontend) のセキュリティチェック ---
+  frontend-security:
+    runs-on: ubuntu-latest
+    env:
+      REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Next.jsの依存関係の脆弱性チェック
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=high --json > audit-results.json || true
+          jq -r '.vulnerabilities | to_entries[] | "package.json:1:1: \(.key): \(.value.severity) - \(.value.via[0].title // .value.via[0])"' audit-results.json | reviewdog -efm="%f:%l:%c: %m" -name="npm audit" -reporter=github-pr-review -filter-mode=diff
+        continue-on-error: true
+   
+      # TypeScriptの型チェック
+      - name: Type Check
+        run: |
+          npx tsc --noEmit --pretty false 2>&1 | reviewdog -efm="%f(%l,%c): error TS%n: %m" -name="TypeScript" -reporter=github-pr-review -filter-mode=diff
+        continue-on-error: true
+
+      # 静的解析チェック
+      - name: Run ESLint (eslint-plugin-security)
+        run: |
+          npx eslint "**/*.{js,jsx,ts,tsx}" -f json -o eslint-results.json || true
+          cat eslint-results.json | reviewdog -f=eslint -name="ESLint" -reporter=github-pr-review -filter-mode=diff
+        continue-on-error: true
