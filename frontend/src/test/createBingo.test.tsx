@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CreateBingo from '@/pages/createBingo';
 import styles from '@/styles/createBingo.module.scss';
@@ -53,12 +53,12 @@ describe('CreateBingoコンポーネント', () => {
 
   it('空の目標でバリデーションエラーが表示される', async () => {
     const user = userEvent.setup();
-    const { container } =render(<CreateBingo />);
+    const { container } = render(<CreateBingo />);
     
     const submitButton = screen.getByRole('button', { name: /作成/ });
     await user.click(submitButton);
     
-    // 最初のgaolForm要素の下のエラーメッセージを確認
+    // 最初のgoalForm要素の下のエラーメッセージを確認
     const firstGoalForm = container.getElementsByClassName(styles.goalForm)[0];
     await waitFor(() => {
         expect(
@@ -69,7 +69,7 @@ describe('CreateBingoコンポーネント', () => {
 
   it('8個未満の目標ではバリデーションエラーが表示される', async () => {
     const user = userEvent.setup();
-    render(<CreateBingo />);
+    const { container } = render(<CreateBingo />);
     
     const inputs = screen.getAllByRole('textbox');
     
@@ -81,9 +81,12 @@ describe('CreateBingoコンポーネント', () => {
     const submitButton = screen.getByRole('button', { name: /作成/ });
     await user.click(submitButton);
     
-    // エラーメッセージが表示されることを確認
+    // 5個目のgoalForm要素の下のエラーメッセージを確認
+    const fifthGoalForm = container.getElementsByClassName(styles.goalForm)[4];
     await waitFor(() => {
-      expect(screen.queryByText(/Array/)).toBeDefined();
+        expect(
+        within(fifthGoalForm.parentElement!).getByText(/入力してください/)
+        ).toBeInTheDocument();
     });
   });
 
@@ -99,7 +102,7 @@ describe('CreateBingoコンポーネント', () => {
     const submitButton = screen.getByRole('button', { name: /作成/ });
     await user.click(submitButton);
     
-    // 最初のgaolForm要素の下のエラーメッセージを確認
+    // 最初のgoalForm要素の下のエラーメッセージを確認
     const firstGoalForm = container.getElementsByClassName(styles.goalForm)[0];
     await waitFor(() => {
         expect(
@@ -126,7 +129,7 @@ describe('CreateBingoコンポーネント', () => {
 
   it('ローディング中はボタンがdisabledになる', async () => {
     const user = userEvent.setup();
-    const { container } = render(<CreateBingo />);
+    render(<CreateBingo />);
     
     const inputs = screen.getAllByRole('textbox');
     

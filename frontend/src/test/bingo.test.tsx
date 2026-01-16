@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Bingo from '@/pages/bingo';
-import styles from '@/styles/bingo.module.scss'
+import styles from '@/styles/bingo.module.scss';
 
 describe('Bingoコンポーネント', () => {
   const mockGoals = [
