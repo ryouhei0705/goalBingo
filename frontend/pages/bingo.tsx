@@ -90,7 +90,7 @@ const Bingo = ({ goals }: { goals: string[] }) => {
                                 <div
                                     key={colIndex}
                                     onClick={() => handleClick(rowIndex, colIndex)}
-                                    className={`${styles.cell} ${cell.marked ? styles.cellMarked : styles.cellNoMarke}`}
+                                    className={`${styles.cell} ${cell.marked ? styles.cellMarked : styles.cellNoMarked}`}
                                 >
                                     <p>
                                         {cell.goal}
