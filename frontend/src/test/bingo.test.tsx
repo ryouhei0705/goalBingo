@@ -49,7 +49,7 @@ describe('Bingoコンポーネント', () => {
     // その他のセルはマークされていない
     cells.forEach((cell, index) => {
       if (index !== 4) {
-        expect(cell).toHaveClass(styles.cellNoMarke);
+        expect(cell).toHaveClass(styles.cellNoMarked);
       }
     });
   });
@@ -59,7 +59,7 @@ describe('Bingoコンポーネント', () => {
     const cells = container.querySelectorAll(`.${styles.cell}`);
     
     // 最初のセルがマークされていないことを確認
-    expect(cells[0]).toHaveClass(styles.cellNoMarke);
+    expect(cells[0]).toHaveClass(styles.cellNoMarked);
 
     // 最初のセルをクリック
     fireEvent.click(cells[0]);
@@ -69,7 +69,7 @@ describe('Bingoコンポーネント', () => {
     
     // もう一度クリックするとマークが解除される
     fireEvent.click(cells[0]);
-    expect(cells[0]).toHaveClass(styles.cellNoMarke);
+    expect(cells[0]).toHaveClass(styles.cellNoMarked);
   });
 
   it('複数のセルが独立してマーク可能である', () => {
@@ -77,9 +77,9 @@ describe('Bingoコンポーネント', () => {
     const cells = container.querySelectorAll(`.${styles.cell}`);
     
     // 各セルがマークされていないことを確認
-    expect(cells[0]).toHaveClass(styles.cellNoMarke);
-    expect(cells[2]).toHaveClass(styles.cellNoMarke);
-    expect(cells[6]).toHaveClass(styles.cellNoMarke);
+    expect(cells[0]).toHaveClass(styles.cellNoMarked);
+    expect(cells[2]).toHaveClass(styles.cellNoMarked);
+    expect(cells[6]).toHaveClass(styles.cellNoMarked);
 
     // 複数のセルをクリック
     fireEvent.click(cells[0]);
