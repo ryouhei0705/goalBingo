@@ -33,18 +33,18 @@ jobs:
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
 
       - name: Run govulncheck
+        # govulncheck を JSON 出力で実行し、結果をファイルに保存する
+        # JSON からファイル名・行・列・メッセージを抽出して reviewdog が解釈できる形式に変換する
         run: |
-          # govulncheck を JSON 出力で実行し、結果をファイルに保存する
           govulncheck -json ./... > govulncheck.json || true
-          # JSON からファイル名・行・列・メッセージを抽出して reviewdog が解釈できる形式に変換する
           jq -r '
             select(.Report != null)
-            | .Report.Vulnerabilities[]?
-            | .Modules[]?
+            | .Report.Vulnerabilities[]? as $v
+            | $v.Modules[]?
             | .Packages[]?
             | .CallStacks[]?
             | .Frames[]?
-            | "\(.Pos.Filename):\(.Pos.Line):\(.Pos.Column // 1): \(.Summary)"
+            | "\(.Pos.Filename):\(.Pos.Line):\(.Pos.Column // 1): \($v.Summary)"
           ' govulncheck.json \
             | reviewdog -efm="%f:%l:%c: %m" -name="govulncheck" -reporter=github-pr-review -filter-mode=diff
         continue-on-error: true
