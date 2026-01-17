@@ -26,12 +26,12 @@ func TestHandleGoals_Success(t *testing.T) {
 
 	// モックの期待値を設定
 	testBingoID := "550e8400-e29b-41d4-a716-446655440000"
-	rows := sqlmock.NewRows([]string{"bingo_id", "content"}).
-		AddRow(testBingoID, "目標1").
-		AddRow(testBingoID, "目標2").
-		AddRow(testBingoID, "目標3")
+	rows := sqlmock.NewRows([]string{"id", "bingo_id", "content", "is_achieved"}).
+		AddRow("id1", testBingoID, "目標1", false).
+		AddRow("id2", testBingoID, "目標2", false).
+		AddRow("id3", testBingoID, "目標3", false)
 
-	mock.ExpectQuery("SELECT bingo_id, content FROM goal_items WHERE bingo_id = ?").
+	mock.ExpectQuery("SELECT id, bingo_id, content, is_achieved FROM goal_items WHERE bingo_id = ?").
 		WithArgs(testBingoID).
 		WillReturnRows(rows)
 
@@ -235,8 +235,8 @@ func TestWithCORS(t *testing.T) {
 		t.Errorf("期待するOrigin: 'https://goal-bingo.vercel.app', 実際: '%s'", origin)
 	}
 
-	if methods := rr.Header().Get("Access-Control-Allow-Methods"); methods != "GET, POST, OPTIONS" {
-		t.Errorf("期待するMethods: 'GET, POST, OPTIONS', 実際: '%s'", methods)
+	if methods := rr.Header().Get("Access-Control-Allow-Methods"); methods != "GET, POST, PUT, OPTIONS" {
+		t.Errorf("期待するMethods: 'GET, POST, PUT, OPTIONS', 実際: '%s'", methods)
 	}
 
 	if headers := rr.Header().Get("Access-Control-Allow-Headers"); headers != "Content-Type" {
