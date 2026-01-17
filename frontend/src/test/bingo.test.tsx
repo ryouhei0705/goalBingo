@@ -2,6 +2,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Bingo from '@/pages/bingo';
 import styles from '@/styles/bingo.module.scss';
+import { a } from 'vitest/dist/chunks/suite.d.BJWk38HB';
+
+// sleep ヘルパー関数
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 describe('Bingoコンポーネント', () => {
   type Goal = { id: string; goal: string; isAchieved: boolean };
@@ -57,7 +61,7 @@ describe('Bingoコンポーネント', () => {
     });
   });
 
-  it('セルをクリックするとマーク状態がトグルされる', () => {
+  it('セルをクリックするとマーク状態がトグルされる', async () => {
     const { container } = render(<Bingo goals={mockGoals} bingoId={mockBingoId} />);
     const cells = container.querySelectorAll(`.${styles.cell}`);
     
@@ -66,16 +70,18 @@ describe('Bingoコンポーネント', () => {
 
     // 最初のセルをクリック
     fireEvent.click(cells[0]);
+    await sleep(1000); 
     
     // クラスが変更されることを確認
     expect(cells[0]).toHaveClass(styles.cellMarked);
     
     // もう一度クリックするとマークが解除される
     fireEvent.click(cells[0]);
+    await sleep(1000); 
     expect(cells[0]).toHaveClass(styles.cellNoMarked);
   });
 
-  it('複数のセルが独立してマーク可能である', () => {
+  it('複数のセルが独立してマーク可能である', async () => {
     const { container } = render(<Bingo goals={mockGoals} bingoId={mockBingoId} />);
     const cells = container.querySelectorAll(`.${styles.cell}`);
     
@@ -86,8 +92,11 @@ describe('Bingoコンポーネント', () => {
 
     // 複数のセルをクリック
     fireEvent.click(cells[0]);
+    await sleep(1000); 
     fireEvent.click(cells[2]);
+    await sleep(1000); 
     fireEvent.click(cells[6]);
+    await sleep(1000); 
     
     // 各セルがマークされていることを確認
     expect(cells[0]).toHaveClass(styles.cellMarked);

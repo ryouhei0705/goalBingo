@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/router';
 import styles from '@/styles/bingo.module.scss'
 import Head from 'next/head';
+import { set } from 'zod';
+import { fi } from 'zod/v4/locales';
+import { i } from 'vite/dist/node/chunks/moduleRunnerTransport';
 
 type GoalItem = { id: string; goal: string; isAchieved: boolean };
 type CellData = { goalId?: string; goal: string; marked: boolean };
@@ -33,10 +35,19 @@ const Bingo = ({ goals, bingoId }: { goals: GoalItem[]; bingoId: string }) => {
 
     // ビンゴの各セルをクリックした時の処理
     const handleClick = async (row: number, col: number) => {
-        // 真ん中は固定
-        if (row === 1 && col === 1) return;
+        // ローディング中は何もしない
+        if (loading) return; 
+        
 
-        const updated = board.map(r => r.map(c => ({ ...c })));
+        // 真ん中は固定
+        if (row === 1 && col === 1) {
+            setLoading(false);
+            return;
+        }
+        setLoading(true);
+
+        const oldBoard = board.map(r => r.map(c => ({ ...c })));
+        const updated = oldBoard;
         updated[row][col].marked = !updated[row][col].marked;
         setBoard(updated);
 
@@ -50,6 +61,7 @@ const Bingo = ({ goals, bingoId }: { goals: GoalItem[]; bingoId: string }) => {
         const goalIds = payloadGoals.map(p => p.goalId);
         const isAchieveds = payloadGoals.map(p => p.isAchieved);
 
+        setLoading(false);
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/goals/${bingoId}`, {
                 method: 'PUT',
@@ -60,8 +72,7 @@ const Bingo = ({ goals, bingoId }: { goals: GoalItem[]; bingoId: string }) => {
         } catch (e) {
             console.error(e);
             // ロールバック
-            updated[row][col].marked = !updated[row][col].marked;
-            setBoard(updated);
+            setBoard(oldBoard);
         }
     };
 
@@ -77,8 +88,9 @@ const Bingo = ({ goals, bingoId }: { goals: GoalItem[]; bingoId: string }) => {
                         {row.map((cell, colIndex) => (
                             <div
                                 key={colIndex}
-                                onClick={() => handleClick(rowIndex, colIndex)}
+                                onClick={!loading ? () => handleClick(rowIndex, colIndex) : undefined}
                                 className={`${styles.cell} ${cell.marked ? styles.cellMarked : styles.cellNoMarked}`}
+                                
                             >
                                 <p>{cell.goal}</p>
                             </div>

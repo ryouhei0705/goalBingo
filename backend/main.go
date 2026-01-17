@@ -26,7 +26,7 @@ type UpdateRequestQuery struct {
 // putのapiのリクエストボディ形式
 type UpdateRequestBody struct {
 	GoalIDs     []string `json:"goalIds" validate:"required,dive,uuid4"`
-	IsAchieveds []bool   `json:"isAchieveds"`
+	IsAchieveds []bool   `json:"isAchieveds" validate:"required,dive,boolean"`
 }
 
 // readのapiのリクエスト形式
@@ -63,6 +63,15 @@ var validate = validator.New()
 
 func init() {
 	validate.RegisterValidation("japanese_alphanum", japaneseAlphanum)
+	validate.RegisterStructValidation(func(sl validator.StructLevel) {
+		req := sl.Current().Interface().(UpdateRequestBody)
+		if len(req.GoalIDs) != len(req.IsAchieveds) {
+			sl.ReportError(req.GoalIDs, "GoalIDs", "GoalIDs", "arrayLengthMismatch", "")
+		}
+		if len(req.GoalIDs) == 0 {
+			sl.ReportError(req.GoalIDs, "GoalIDs", "GoalIDs", "required", "")
+		}
+	}, UpdateRequestBody{})
 }
 
 func initDB() (*sql.DB, error) {
@@ -300,11 +309,13 @@ func handleUpdateGoal(w http.ResponseWriter, r *http.Request) {
 			"UPDATE goal_items SET is_achieved = ? WHERE id = ? AND bingo_id = ?",
 			req.IsAchieveds[i], req.GoalIDs[i], bingoId); err != nil {
 			tx.Rollback()
+			log.Printf("ERROR: goal_items 更新に失敗したためロールバックしました: %v\n", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 	}
 	if err := tx.Commit(); err != nil {
+		log.Printf("ERROR: トランザクションコミットに失敗しました: %v\n", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
