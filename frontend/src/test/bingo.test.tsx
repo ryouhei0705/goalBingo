@@ -4,35 +4,38 @@ import Bingo from '@/pages/bingo';
 import styles from '@/styles/bingo.module.scss';
 
 describe('Bingoコンポーネント', () => {
-  const mockGoals = [
-    '目標1',
-    '目標2',
-    '目標3',
-    '目標4',
-    '目標5',
-    '目標6',
-    '目標7',
-    '目標8',
+  type Goal = { id: string; goal: string; isAchieved: boolean };
+
+  const mockGoals: Goal[] = [
+    { id: 'id1', goal: '目標1', isAchieved: false },
+    { id: 'id2', goal: '目標2', isAchieved: false },
+    { id: 'id3', goal: '目標3', isAchieved: false },
+    { id: 'id4', goal: '目標4', isAchieved: false },
+    { id: 'id5', goal: '目標5', isAchieved: false },
+    { id: 'id6', goal: '目標6', isAchieved: false },
+    { id: 'id7', goal: '目標7', isAchieved: false },
+    { id: 'id8', goal: '目標8', isAchieved: false },
   ];
+  const mockBingoId = 'test-bingo-id';
 
   beforeEach(() => {
     // テストの前に初期化
   });
 
   it('コンポーネントがレンダリングされる', () => {
-    render(<Bingo goals={mockGoals} />);
+    render(<Bingo goals={mockGoals} bingoId={mockBingoId} />);
     expect(screen.getByText('目標を立てる')).toBeInTheDocument();
   });
 
   it('3x3のビンゴボードが作成される', () => {
-    render(<Bingo goals={mockGoals} />);
+    render(<Bingo goals={mockGoals} bingoId={mockBingoId} />);
     // 9つのセルが存在することを確認
     const cells = screen.getAllByText(/目標[1-8]|目標を立てる/);
     expect(cells.length).toBe(9);
   });
 
   it('中央のセルは「目標を立てる」である', () => {
-    const { container } = render(<Bingo goals={mockGoals} />);
+    const { container } = render(<Bingo goals={mockGoals} bingoId={mockBingoId} />);
     const cells = container.querySelectorAll(`.${styles.cell}`);
 
     // 中央のセルのテキストを確認
@@ -55,7 +58,7 @@ describe('Bingoコンポーネント', () => {
   });
 
   it('セルをクリックするとマーク状態がトグルされる', () => {
-    const { container } = render(<Bingo goals={mockGoals} />);
+    const { container } = render(<Bingo goals={mockGoals} bingoId={mockBingoId} />);
     const cells = container.querySelectorAll(`.${styles.cell}`);
     
     // 最初のセルがマークされていないことを確認
@@ -73,7 +76,7 @@ describe('Bingoコンポーネント', () => {
   });
 
   it('複数のセルが独立してマーク可能である', () => {
-    const { container } = render(<Bingo goals={mockGoals} />);
+    const { container } = render(<Bingo goals={mockGoals} bingoId={mockBingoId} />);
     const cells = container.querySelectorAll(`.${styles.cell}`);
     
     // 各セルがマークされていないことを確認
@@ -93,7 +96,7 @@ describe('Bingoコンポーネント', () => {
   });
 
   it('目標が正しく割り当てられる', () => {
-    const { container } = render(<Bingo goals={mockGoals} />);
+    const { container } = render(<Bingo goals={mockGoals} bingoId={mockBingoId} />);
     const cells = container.querySelectorAll(`.${styles.cell}`);
     
     // 中央のセルのテキストを確認
@@ -102,7 +105,7 @@ describe('Bingoコンポーネント', () => {
     // その他のセルのテキストを確認
     cells.forEach((cell, index) => {
       if (index !== 4) {
-        expect(cell).toHaveTextContent(mockGoals[index < 4 ? index : index - 1]);
+        expect(cell).toHaveTextContent(mockGoals[index < 4 ? index : index - 1].goal);
       }
     });
   });
