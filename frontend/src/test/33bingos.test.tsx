@@ -14,7 +14,19 @@ vi.mock('next/router', () => ({
 global.fetch = vi.fn();
 
 describe('[bingoId] ページ', () => {
-  const mockGoals = ['目標1', '目標2', '目標3', '目標4', '目標5', '目標6', '目標7', '目標8'];
+  type Goal = { id: string; goal: string; isAchieved: boolean };
+
+  const mockGoals: Goal[] = [
+    { id: 'id1', goal: '目標1', isAchieved: false },
+    { id: 'id2', goal: '目標2', isAchieved: false },
+    { id: 'id3', goal: '目標3', isAchieved: false },
+    { id: 'id4', goal: '目標4', isAchieved: false },
+    { id: 'id5', goal: '目標5', isAchieved: false },
+    { id: 'id6', goal: '目標6', isAchieved: false },
+    { id: 'id7', goal: '目標7', isAchieved: false },
+    { id: 'id8', goal: '目標8', isAchieved: false },
+  ];
+  const mockBingoId = 'test-bingo-id';
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -22,25 +34,25 @@ describe('[bingoId] ページ', () => {
 
   describe('Homeコンポーネント', () => {
     it('ページがレンダリングされる', () => {
-      render(<Home goals={mockGoals} />);
+      render(<Home goals={mockGoals} bingoId={mockBingoId} />);
       expect(screen.getByText('目標ビンゴ')).toBeInTheDocument();
     });
 
     it('Bingoコンポーネントが表示される', () => {
-      render(<Home goals={mockGoals} />);
+      render(<Home goals={mockGoals} bingoId={mockBingoId} />);
       expect(screen.getByText('目標を立てる')).toBeInTheDocument();
     });
 
     it('目標がすべて表示される', () => {
-      render(<Home goals={mockGoals} />);
+      render(<Home goals={mockGoals} bingoId={mockBingoId} />);
       
       mockGoals.forEach((goal) => {
-        expect(screen.getByText(goal)).toBeInTheDocument();
+        expect(screen.getByText(goal.goal)).toBeInTheDocument();
       });
     });
 
     it('CreateBingoコンポーネントが表示される', () => {
-      render(<Home goals={mockGoals} />);
+      render(<Home goals={mockGoals} bingoId={mockBingoId} />);
       expect(screen.getByText('目標ビンゴを作成しよう!!')).toBeInTheDocument();
     });
   });

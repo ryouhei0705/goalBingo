@@ -6,19 +6,33 @@ import CreateBingo from '../createBingo';
 import Head from 'next/head';
 import Link from 'next/link';
 import { readRequestSchema } from '../../schemas/bingo';
- 
-// apiのベースurl
-// const BASE_URL = "https://script.google.com/macros/s/AKfycbyJN6CWNVMbqN4lQm4b_I9r9Itdug4nVv9-gHMlGkf-t8iF31MwxwewqzFBZjTQ3vJ4/exec";
+
+// APIのベースurl
 const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/goals`;
 
-// apiから受け取るデータを変換する型
-type GoalRow = { bingoId: string; goal: string };
+// APIから受け取る型
+type ApiGoalRow = {
+  goalId: string;
+  bingoId: string;
+  goal: string;
+  isAchieved: boolean;
+};
+
+// Bingoに渡す型（bingoIdなし）
+type Goal = {
+  id: string;
+  goal: string;
+  isAchieved: boolean;
+};
+
+type HomeProps = {
+  goals: Goal[];
+  bingoId: string;
+};
 
 // ページ読み込み時に起動する
-export const getServerSideProps: GetServerSideProps<{goals: string[]}> 
-= async ({ params }) => {
-    // 動的ルーティングのパラメータを取得
-    // URL が /33bingos/123 のとき → bingoId = "123"
+export const getServerSideProps: GetServerSideProps<HomeProps> = async ({ params }) => {
+  // 動的ルーティングのパラメータを取得
   const bingoId = params!.bingoId as string;
 
   // bingoIdのバリデーション
@@ -31,41 +45,46 @@ export const getServerSideProps: GetServerSideProps<{goals: string[]}>
   // バリデーション済みのbingoIdを使用
   const validatedBingoId = validationResult.data.bingoId;
 
-    // apiを使用して{bingoId}の目標をデータベースから取得
+  // apiを使用して{bingoId}の目標をデータベースから取得
   const res = await fetch(`${BASE_URL}?bingoId=${validatedBingoId}`);
 
-//   apiから問題なくデータを取得できたか確認
+  // APIから問題なくデータを取得できたか確認
   if (!res.ok) {
     // 404にしたいなら
     return { notFound: true };
   }
 
-//   apiから受け取ったjsonを変換
-  const rows = (await res.json()) as GoalRow[];
-  // goal だけの配列にして渡す
-  const goals = rows.map(r => r.goal);
+  const rows = (await res.json()) as ApiGoalRow[];
+  // bingoIdを落としてBingo用の型に変換
+  const goals: Goal[] = rows.map(({ goalId, goal, isAchieved }) => ({
+    id: goalId,
+    goal,
+    isAchieved,
+  }));
 
-  return { props: { goals} };
+  return {
+    props: {
+      goals,
+      bingoId: validatedBingoId,
+    },
+  };
 };
 
 // メインのページ
-const Home = (
-    { goals}: InferGetServerSidePropsType<typeof getServerSideProps>
-) => {
-    // サーバーレンダリングが終わるのを待つ
-    const router = useRouter();
-    if (!router.isReady) return <p>Loading...</p>;
+const Home = ({ goals, bingoId }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  // サーバーレンダリングが終わるのを待つ
+  const router = useRouter();
+  if (!router.isReady) return <p>Loading...</p>;
 
   return (
     <div>
-      {/* <HamburgerMenu /> */}
       <Head>
         <title>目標ビンゴ</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
-      <Bingo goals={goals}/>{/* ビンゴ */}
-      <CreateBingo />{/* ビンゴの作成 */}
+      <Bingo goals={goals} bingoId={bingoId} /> {/* ビンゴ */}
+      <CreateBingo /> {/* ビンゴの作成 */}
     </div>
   );
 };

@@ -18,15 +18,28 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// putのapiのリクエストクエリ形式
+type UpdateRequestQuery struct {
+	BingoID string `validate:"required,uuid4"`
+}
+
+// putのapiのリクエストボディ形式
+type UpdateRequestBody struct {
+	GoalIDs     []string `json:"goalIds" validate:"required,dive,uuid4"`
+	IsAchieveds []bool   `json:"isAchieveds" validate:"required,dive,boolean"`
+}
+
 // readのapiのリクエスト形式
 type ReadRequest struct {
-	BingoID string `validate:"required,uuid"`
+	BingoID string `validate:"required,uuid4"`
 }
 
 // フロントエンドの GoalRow 型に合わせる
 type GoalRow struct {
-	BingoID string `json:"bingoId"`
-	Goal    string `json:"goal"`
+	GoalID     string `json:"goalId"`
+	BingoID    string `json:"bingoId"`
+	Goal       string `json:"goal"`
+	IsAchieved bool   `json:"isAchieved"`
 }
 
 // createのapiのリクエスト形式
@@ -50,6 +63,15 @@ var validate = validator.New()
 
 func init() {
 	validate.RegisterValidation("japanese_alphanum", japaneseAlphanum)
+	validate.RegisterStructValidation(func(sl validator.StructLevel) {
+		req := sl.Current().Interface().(UpdateRequestBody)
+		if len(req.GoalIDs) != len(req.IsAchieveds) {
+			sl.ReportError(req.GoalIDs, "GoalIDs", "GoalIDs", "arrayLengthMismatch", "")
+		}
+		if len(req.GoalIDs) == 0 {
+			sl.ReportError(req.GoalIDs, "GoalIDs", "GoalIDs", "required", "")
+		}
+	}, UpdateRequestBody{})
 }
 
 func initDB() (*sql.DB, error) {
@@ -93,6 +115,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/goals", handleGoals)        // GET: 取得
 	mux.HandleFunc("/api/createGoals", handleCreate) // POST: 作成
+	mux.HandleFunc("/api/goals/", handleUpdateGoal)  // PUT: 更新
 
 	// Railwayが指定するポート番号を取得
 	port := os.Getenv("PORT")
@@ -119,7 +142,7 @@ func main() {
 func withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", os.Getenv("FRONTENDURL")) // Next.jsからのアクセスを許可
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == "OPTIONS" {
@@ -153,7 +176,7 @@ func handleGoals(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	rows, err := db.QueryContext(ctx, "SELECT bingo_id, content FROM goal_items WHERE bingo_id = ?", bingoId)
+	rows, err := db.QueryContext(ctx, "SELECT id, bingo_id, content, is_achieved FROM goal_items WHERE bingo_id = ?", bingoId)
 	if err != nil {
 		log.Printf("ERROR: データベース goal_items WHERE bingo_id = (%v) の取得に失敗しました: %v \n", bingoId, err)
 
@@ -165,7 +188,7 @@ func handleGoals(w http.ResponseWriter, r *http.Request) {
 	var results []GoalRow
 	for rows.Next() {
 		var g GoalRow
-		if err := rows.Scan(&g.BingoID, &g.Goal); err != nil {
+		if err := rows.Scan(&g.GoalID, &g.BingoID, &g.Goal, &g.IsAchieved); err != nil {
 			log.Println(err)
 			continue
 		}
@@ -238,4 +261,65 @@ func handleCreate(w http.ResponseWriter, r *http.Request) {
 	// フロントエンドが期待する {"bingoId": "..."} を返す
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(map[string]string{"bingoId": newBingoId})
+}
+
+// PUT /api/goals/:bingoId
+func handleUpdateGoal(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "PUT" {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// URLからbingoIdを抽出
+	bingoId := r.URL.Path[len("/api/goals/"):]
+	query := UpdateRequestQuery{
+		BingoID: bingoId,
+	}
+
+	// バリデーションチェック
+	if err := validate.Struct(query); err != nil {
+		http.Error(w, "無効なクエリです。", http.StatusBadRequest)
+		return
+	}
+
+	var req UpdateRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	// バリデーションチェック
+	if err := validate.Struct(req); err != nil {
+		http.Error(w, "リクエストボディが正しくありません。", http.StatusBadRequest)
+		log.Printf("Validation Error: %v\n", err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Printf("ERROR: トランザクション開始に失敗しました: %v\n", err)
+		return
+	}
+
+	for i := range req.GoalIDs {
+		if _, err := tx.ExecContext(ctx,
+			"UPDATE goal_items SET is_achieved = ? WHERE id = ? AND bingo_id = ?",
+			req.IsAchieveds[i], req.GoalIDs[i], bingoId); err != nil {
+			tx.Rollback()
+			log.Printf("ERROR: goal_items 更新に失敗したためロールバックしました: %v\n", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		log.Printf("ERROR: トランザクションコミットに失敗しました: %v\n", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
 }
